@@ -12,10 +12,12 @@
  * @author Finlay Macklon
  */
 
+import { TypeDetection } from "./TypeDetection";
+
 /**
  * Class for accessing PIXI objects that are rendered to <canvas>
  */
-class PixiDebugger {
+export class PixiDebugger {
     constructor() {
         this.o = [];
         this.isInjected = false;

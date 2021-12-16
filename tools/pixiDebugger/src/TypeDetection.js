@@ -3,7 +3,7 @@
  * source: https://github.com/bfanger/pixi-inspector/blob/master/src/services/TypeDetection.js
  */
 
-class TypeDetection {
+export class TypeDetection {
   constructor() {
     this.constructors = [];
     this.names = [];
