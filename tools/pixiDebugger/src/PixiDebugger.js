@@ -5,23 +5,23 @@
  * 
  * "Simple API that uses game framework to (de-)register game objects to/from a list"
  * 
- * Referenced https://github.com/bfanger/pixi-inspector/ 
  * TODO
- * - Maybe set upstream for TypeDetection.js to bfanger/pixi-inspector
+ * - make it more pure :P  (Wayyy too many side-effects in this code)
  * 
  * @author Finlay Macklon
  */
-
-import { TypeDetection } from "./TypeDetection";
 
 /**
  * Class for accessing PIXI objects that are rendered to <canvas>
  */
 export class PixiDebugger {
     constructor() {
-        this.o = [];
         this.isInjected = false;
-        this.typeDetection = new TypeDetection();
+        this.rootName = "PIXI";
+        this.maxDepth = 2;
+        this.o = [];
+        this.constructors = [];
+        this.types = [];
     }
     /**
      * Inject the game renderer method with our tracking code
@@ -31,9 +31,8 @@ export class PixiDebugger {
             return;
         if (this.isInjected) 
             return 0;
-        const maxDepth = 2;
         // register the types present in global PIXI object
-        this.typeDetection.registerTypes("PIXI.", PIXI, maxDepth);
+        this.discoverTypes();
         // TODO maybe check PIXI.RENDERER_TYPE then load the correct renderer?
         const Renderer = PIXI.Renderer;
         // original rendering function
@@ -75,15 +74,51 @@ export class PixiDebugger {
      * Is it a good idea to check whether object's bounding box is within canvas viewport?
      * ...probably not, because that is a lot of extra computation vs. just checking when we need to.
      */
-    findVisibleObjects(parent) {
-        if (!parent.type)
-            parent.type = this.typeDetection.detectType(parent);
+    findVisibleObjects(node) {
+        // side effects here. should return results and then assign seperately.
+        // not idempotent.
+        if (!node.type)
+            node.type = this.assignType(node);
         // Currently think its a good idea not to track the Graphics or Container objects
         // ...because they are not really the game objects that we see on the <canvas>.
-        if ((parent.type !== "PIXI.Graphics") && (parent.type !== "PIXI.Container") &&
-            (parent.visible) && (parent.renderable))
-            this.o.push(parent);
-        if (parent.children)
-            parent.children.map(c => this.findVisibleObjects(c));
+        if ((node.type !== "PIXI.Graphics") && (node.type !== "PIXI.Container") &&
+            (node.visible) && (node.renderable))
+            this.o.push(node);
+        if (node.children)
+            node.children.map(c => this.findVisibleObjects(c));
     }
+    discoverTypes(obj=PIXI, depth=this.maxDepth) {
+        if (depth === 0 || typeof obj != "object")
+            return;
+        Object.keys(obj).map(k => {
+            if (typeof obj[k] === "function") {
+                this.constructors.push(obj[k]);
+                const newType = `${this.rootName}.${k}`;
+                this.types.push(newType);
+            // only grab objects that include length
+            } else if (typeof obj[k] === "object" && obj[k].length === undefined) {
+                this.discoverTypes(obj[k], depth-1);
+            }
+        });
+    }
+    assignType(node) {
+        if (!node.constructor)
+          return "";
+
+        const idx = this.constructors.indexOf(node.constructor);
+        if (idx !== -1) 
+            return this.types[idx];
+        
+        const newType = this.inferType(node);
+        
+        // side effects!!! :-(
+        this.constructors.push(node.constructor);
+        this.types.push(newType);
+
+        return newType;
+      }
+      inferType(node) {
+        const name = node.constructor.name;
+        return `PIXI.${name}`;
+      }
 }

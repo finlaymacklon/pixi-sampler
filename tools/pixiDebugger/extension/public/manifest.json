@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Pixi Tooltips",
+  "name": "Pixi Debugger",
   "version": "0.1.0",
   "description": "Shows a tooltip with desired information when hovering over Pixi.js objects.",
   "icons": {
@@ -13,7 +13,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Pixi Tooltips",
+    "default_title": "Pixi Debugger",
     "default_popup": "popup.html"
   },
   "permissions": [

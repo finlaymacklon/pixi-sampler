@@ -37,9 +37,9 @@ import { PixiDebugger } from "../../src/PixiDebugger";
       const dx = e.offsetX - left;
       const dy = e.offsetY - top;
       const isHit = (dx > 0) && (dx < o.width) && (dy > 0) && (dy < o.height);
-      const name = o.name;
-      if (isHit && name) {
-        console.log({ name, left, top, dx, dy, isHit })
+      //const name = o.name;
+      if (isHit) { //} && name) {
+        //console.log({ name, left, top, dx, dy, isHit })
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
         tooltip.innerText = `{name: ${o.name}, type: ${o.type}}`;
