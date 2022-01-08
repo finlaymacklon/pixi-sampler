@@ -5,9 +5,6 @@
  * 
  * "Simple API that uses game framework to (de-)register game objects to/from a list"
  * 
- * TODO
- * - make it more pure :P  (Wayyy too many side-effects in this code)
- * 
  * @author Finlay Macklon
  */
 
@@ -32,7 +29,7 @@ export class PixiDebugger {
         if (this.isInjected) 
             return 0;
         // register the types present in global PIXI object
-        this.discoverTypes();
+        this.discoverTypes(PIXI, this.rootName, this.maxDepth);
         // TODO maybe check PIXI.RENDERER_TYPE then load the correct renderer?
         const Renderer = PIXI.Renderer;
         // original rendering function
@@ -75,50 +72,56 @@ export class PixiDebugger {
      * ...probably not, because that is a lot of extra computation vs. just checking when we need to.
      */
     findVisibleObjects(node) {
-        // side effects here. should return results and then assign seperately.
-        // not idempotent.
-        if (!node.type)
-            node.type = this.assignType(node);
+        const nodeType = this.inferType(node);
         // Currently think its a good idea not to track the Graphics or Container objects
         // ...because they are not really the game objects that we see on the <canvas>.
-        if ((node.type !== "PIXI.Graphics") && (node.type !== "PIXI.Container") &&
-            (node.visible) && (node.renderable))
+        if (this.isRelevant(node, nodeType))
             this.o.push(node);
         if (node.children)
             node.children.map(c => this.findVisibleObjects(c));
     }
-    discoverTypes(obj=PIXI, depth=this.maxDepth) {
-        if (depth === 0 || typeof obj != "object")
+    discoverTypes(obj, objName, depth) {
+        if (depth === 0 || !this.isObject(obj))
             return;
         Object.keys(obj).map(k => {
-            if (typeof obj[k] === "function") {
+            if (this.isClass(obj[k], k)) {
                 this.constructors.push(obj[k]);
-                const newType = `${this.rootName}.${k}`;
+                const newType = `${objName}.${k}`;
                 this.types.push(newType);
-            // only grab objects that include length
-            } else if (typeof obj[k] === "object" && obj[k].length === undefined) {
-                this.discoverTypes(obj[k], depth-1);
+            } else {
+                const childName = `${objName}.${k}`;
+                this.discoverTypes(obj[k], childName, depth-1);
             }
         });
     }
-    assignType(node) {
+    inferType(node) {
         if (!node.constructor)
           return "";
-
         const idx = this.constructors.indexOf(node.constructor);
         if (idx !== -1) 
             return this.types[idx];
-        
-        const newType = this.inferType(node);
-        
-        // side effects!!! :-(
-        this.constructors.push(node.constructor);
-        this.types.push(newType);
-
-        return newType;
-      }
-      inferType(node) {
-        const name = node.constructor.name;
-        return `PIXI.${name}`;
-      }
+        return node.constructor.name;
+    }
+    isRelevant(node, nodeType){
+        return (
+            (nodeType !== "PIXI.Graphics") && 
+            (nodeType !== "PIXI.Container") && 
+            (node.visible) && 
+            (node.renderable)
+        )
+    }
+    isObject(node){
+        return (
+            (typeof node === "object") && 
+            (node !== undefined) && 
+            (node !== null) && 
+            (node.constructor !== Array)
+        )
+    }
+    isClass(node, name){
+        return (
+            (typeof node === "function") &&
+            (/\b[A-Z].*/.test(name))
+        )
+    }
 }
