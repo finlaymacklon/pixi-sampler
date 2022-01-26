@@ -5,15 +5,20 @@
  * 
  * "Simple API that uses game framework to (de-)register game objects to/from a list"
  * 
+ * TODO
+ * Is it a good idea to check whether object's bounding box is within canvas viewport?
+ * ...probably not, because that is a lot of extra computation vs. just checking when we need to.
+ * 
  * @author Finlay Macklon
  */
 
 /**
  * Class for accessing PIXI objects that are rendered to <canvas>
  */
-export class PixiDebugger {
+class PixiDebugger {
     constructor() {
         this.isInjected = false;
+        this.isFreezing = false;
         this.rootName = "PIXI";
         this.maxDepth = 2;
         this.o = [];
@@ -30,46 +35,49 @@ export class PixiDebugger {
             return 0;
         // register the types present in global PIXI object
         this.discoverTypes(PIXI, this.rootName, this.maxDepth);
+        // keep reference to pixiDebugger object
+        const self = this;
         // TODO maybe check PIXI.RENDERER_TYPE then load the correct renderer?
         const Renderer = PIXI.Renderer;
         // original rendering function
         const renderFunction = Renderer.prototype.render;
-        // keep reference to pixiDebugger object
-        const self = this;
         // injected rendering function
         Renderer.prototype.render = function(stage, ...args){
             // this === instance of Renderer
             const result = renderFunction.apply(this, [stage, ...args]);
-            /**
-             * If it turns out that some PIXI Applications use more than
-             * just a single root container for rendering, then may
-             * find it useful to check _lastObjectRendered
-             * and determine whether to update/overwrite part (or all of)
-             * our list of tracked objects.
-             * Something like:
-             * if (app.renderer._lastObjectRendered === object) {
-             *      self.o = [];
-             * }
-             */
             // (de-)register objects from debugger list
             self.o = [];
+            // stage is the root of scene graph (app.stage)
             self.findVisibleObjects(stage);
             return result;
+        }
+        const Ticker = PIXI.Ticker;
+        // original rendering function
+        const tickerFunction = Ticker.prototype.update;
+        // injected rendering function
+        Ticker.prototype.update = function(currentTime, ...args){
+            if (!self.freezeGame)
+                return tickerFunction.apply(this, [currentTime, ...args]);
         }
         this.isInjected = true;
         return 0;
     }
     /**
      * Refresh the list of tracked objects in the PIXI application.
-     * Find all visible, renderable objects in the current stage.
+     * Find all visible, renderable objects in the scene graph.
      * Assumes that application was constructed like: app = new PIXI.Application
      * And uses a single root container like: app.stage 
      * ...as specified in PIXI documentation.
-     * Do not include the stage or containers
+     * Do not include the stage or containers in list.
      * 
      * TODO
-     * Is it a good idea to check whether object's bounding box is within canvas viewport?
-     * ...probably not, because that is a lot of extra computation vs. just checking when we need to.
+     * may find it useful to check _lastObjectRendered
+     * and determine whether to update/overwrite part (or all of)
+     * our list of tracked objects.
+     * Something like:
+     * if (app.renderer._lastObjectRendered === object) {
+     *      self.o = [];
+     * }
      */
     findVisibleObjects(node) {
         const nodeType = this.inferType(node);
@@ -84,12 +92,11 @@ export class PixiDebugger {
         if (depth === 0 || !this.isObject(obj))
             return;
         Object.keys(obj).map(k => {
+            const childName = `${objName}.${k}`;
             if (this.isClass(obj[k], k)) {
                 this.constructors.push(obj[k]);
-                const newType = `${objName}.${k}`;
-                this.types.push(newType);
+                this.types.push(childName);
             } else {
-                const childName = `${objName}.${k}`;
                 this.discoverTypes(obj[k], childName, depth-1);
             }
         });
@@ -119,6 +126,7 @@ export class PixiDebugger {
         )
     }
     isClass(node, name){
+        // assume class names begin with capital letter
         return (
             (typeof node === "function") &&
             (/\b[A-Z].*/.test(name))
