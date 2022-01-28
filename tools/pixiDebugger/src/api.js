@@ -1,6 +1,6 @@
 import fs from "fs-extra-promise";
 
-const instanceName = "__pixi__debugger__";
+const instanceName = "PDEBUG";
 
 /**
  * Inject our automation scripts into the page.
@@ -32,38 +32,43 @@ export async function injectDebugger(page) {
  export async function takeStateSnapshot(page, canvas, snapshotPath) {
   // also want texture.baseTexture.resource.url
   // and texture.frame
-  const getState = makeGameSelector([
-    mapProperties([
-      "x", 
-      "y", 
-      "zIndex", 
-      "height", 
-      "width", 
-      "alpha", 
-      "visible", 
-      "rotation", 
-      "type",
-      "texture?.baseTexture?.resource?.url",
-      "texture?.frame",
-      "scale?.x",
-      "scale?.y",
-      "anchor?.x",
-      "anchor?.y",
-      "tilePosition?.x",
-      "tilePosition?.y",
-      "text",
-      "_font"
-    ])
-  ]);
+  // const getState = makeGameSelector([
+  //   mapProperties([
+  //     "x", 
+  //     "y", 
+  //     "zIndex", 
+  //     "height", 
+  //     "width", 
+  //     "alpha", 
+  //     "visible", 
+  //     "angle",
+  //     "rotation", 
+  //     "type",
+  //     "texture?.baseTexture?.resource?.url",
+  //     "texture?.frame",
+  //     "scale?.x",
+  //     "scale?.y",
+  //     "anchor?.x",
+  //     "anchor?.y",
+  //     "tilePosition?.x",
+  //     "tilePosition?.y",
+  //     "text",
+  //     "_font"
+  //   ])
+  // ]);
   // pause the animations immediately after reading the current state
-  const freezeAndGetState = `(() => {${instanceName}.isFreezing = true; return ${getState}})();`;
-  const stateHandle = await page.evaluateHandle(freezeAndGetState);
+  // const freezeAndGetState = `(() => {${instanceName}.isFreezing = true; return ${instanceName}.getStateSnapshot();})();`;
+  // const freezeAndGetState = `(() => {${instanceName}.isFreezing = true; return ${getState};})();`;
+  //const freezeAndGetState = `(() => {const __pd_state__ = ${getState}; ${instanceName}.isFreezing = true; return __pd_state__})();`;
+  await stopAnimations(page);
   // take and save image of rendered content (png) on the <canvas>
   const imgPath = `${snapshotPath}.png`;
   await canvas.screenshot({path: imgPath});
   // restart animations
-  await startTicker(page);
-  // read the jsonValue of state from earlier execution
+  await startAnimations(page);
+  // read the jsonValue of frozen state 
+  const getState = `${instanceName}.renderedState;`
+  const stateHandle = await page.evaluateHandle(getState);
   const stateJson = await stateHandle.jsonValue();
   // save JSON with state of objects on <canvas>
   const jsonPath = `${snapshotPath}.json`;
@@ -73,14 +78,14 @@ export async function injectDebugger(page) {
 /**
  *
  */
-export async function stopTicker(page) {
-  await page.evaluate(`${instanceName}.freezeGame = true`);
+export async function stopAnimations(page) {
+  await page.evaluate(`${instanceName}.isFreezing = true;`);// ${instanceName}.hasFrozenState = false;`);
 }
 /**
  *
  */
-export async function startTicker(page) {
-  await page.evaluate(`${instanceName}.freezeGame = false`);
+export async function startAnimations(page) {
+  await page.evaluate(`${instanceName}.isFreezing = false;`);// ${instanceName}.hasFrozenState = false;`);
 }
 /**
  * make code to inject to start operating on the game objects list.
