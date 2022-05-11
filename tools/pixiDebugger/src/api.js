@@ -29,9 +29,7 @@ export async function injectDebugger(page) {
  * @arg {Object} page - PlayWright reference to page.
  * @arg {Object} canvas - PlayWright reference to the canvas.
  */
- export async function takeStateSnapshot(page, canvas, snapshotPath) {
-  // also want texture.baseTexture.resource.url
-  // and texture.frame
+ export async function getStateSnapshot(page, canvas, snapshotPath) {
   // const getState = makeGameSelector([
   //   mapProperties([
   //     "x", 
@@ -56,20 +54,20 @@ export async function injectDebugger(page) {
   //     "_font"
   //   ])
   // ]);
-  // pause the animations immediately after reading the current state
-  // const freezeAndGetState = `(() => {${instanceName}.isFreezing = true; return ${instanceName}.getStateSnapshot();})();`;
-  // const freezeAndGetState = `(() => {${instanceName}.isFreezing = true; return ${getState};})();`;
-  //const freezeAndGetState = `(() => {const __pd_state__ = ${getState}; ${instanceName}.isFreezing = true; return __pd_state__})();`;
-  await stopAnimations(page);
+  await freezeAnimations(page);
   // take and save image of rendered content (png) on the <canvas>
   const imgPath = `${snapshotPath}.png`;
   await canvas.screenshot({path: imgPath});
-  // restart animations
-  await startAnimations(page);
   // read the jsonValue of frozen state 
-  const getState = `${instanceName}.renderedState;`
+  const getState = `new Object({
+    resolution: ${instanceName}.resolution,
+    size: ${instanceName}.size,
+    scene: ${instanceName}.renderedState
+  });`
   const stateHandle = await page.evaluateHandle(getState);
   const stateJson = await stateHandle.jsonValue();
+  // restart animations
+  await unfreezeAnimations(page);
   // save JSON with state of objects on <canvas>
   const jsonPath = `${snapshotPath}.json`;
   await fs.writeFileAsync(jsonPath, JSON.stringify(stateJson));
@@ -78,13 +76,13 @@ export async function injectDebugger(page) {
 /**
  *
  */
-export async function stopAnimations(page) {
+export async function freezeAnimations(page) {
   await page.evaluate(`${instanceName}.isFreezing = true;`);// ${instanceName}.hasFrozenState = false;`);
 }
 /**
  *
  */
-export async function startAnimations(page) {
+export async function unfreezeAnimations(page) {
   await page.evaluate(`${instanceName}.isFreezing = false;`);// ${instanceName}.hasFrozenState = false;`);
 }
 /**
@@ -92,7 +90,7 @@ export async function startAnimations(page) {
  * @arg {string[]} [steps=[]]: steps to add to game object(s) selector.
  */
 export function makeGameSelector(steps=[]) {
-  let selectionCode = `${instanceName}.o`;
+  let selectionCode = `${instanceName}.scene`;
   for (const idx in steps) {
     selectionCode += `.${steps[idx]}`;
   }

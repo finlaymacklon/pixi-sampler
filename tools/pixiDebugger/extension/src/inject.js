@@ -23,6 +23,7 @@ import { PixiDebugger } from "../../src/PixiDebugger";
   tooltip.hidden = true;
   //canvas.parentElement.style.position = "relative";
   canvas.parentElement.appendChild(tooltip)
+  // canvas.appendChild(tooltip)
 
   canvas.addEventListener("mousemove", (e) => {
     const showTooltip = __pixi_debugger__.o.map(o => {
@@ -34,8 +35,8 @@ import { PixiDebugger } from "../../src/PixiDebugger";
         left = o.x;
         top = o.y;
       }
-      const dx = e.offsetX - left;
-      const dy = e.offsetY - top;
+      const dx = e.x - left;
+      const dy = e.y - top;
       const isHit = (dx > 0) && (dx < o.width) && (dy > 0) && (dy < o.height);
       //const name = o.name;
       if (isHit) { //} && name) {
