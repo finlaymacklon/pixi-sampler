@@ -5,9 +5,8 @@ export class PixiExposer {
     constructor() {
         this.isInjected = false;
         this.isFreezing = false;
-        this.cor = {};
-        this.width = 0;
-        this.height = 0;
+        this.cor = null;
+        this.canvas = null;
         this.resolution = 1;
     }
     /**
@@ -41,11 +40,10 @@ export class PixiExposer {
             const rndr = this;
             // apply the original rendering function
             renderFunction.apply(rndr, [stage, ...args]);
-            // copy the COR
+            // copy reference to the COR
             xpsr.cor = stage;
-            // copy the size of the canvas
-            xpsr.width = rndr.view.width
-            xpsr.height = rndr.view.height;
+            // copy reference to the canvas
+            xpsr.canvas = rndr.view;
             // copy the resolution of the renderer
             xpsr.resolution = rndr.resolution;
         }
@@ -59,13 +57,13 @@ export class PixiExposer {
         // stop rendering
         this.isFreezing = true;
         // get COR blob
-        const corBlob = this.corshot();
+        const frozenCorBlob = this.corpoll();
         // get screenshot blob
         const screenshotBlob = this.screenshot();
         // restart rendering
         this.isFreezing = false;
         // save blobs
-        this.saveBlob(corBlob, "cor.json");
+        this.saveBlob(frozenCorBlob, "cor.json");
         this.saveBlob(screenshotBlob, "screenshot.png");
         // delete blobs? or will they be collected because de-referenced?
         // ...
@@ -77,15 +75,21 @@ export class PixiExposer {
         return;
     }
     /**
-     * Get a blob (JSON) of the current COR
+     * Poll the scene graph for a blob (JSON) of the current COR
      */
-    corshot(){
-        return;
+     corpoll(){
+        return Object.assign({}, this.cor);
     }
     /**
      * Get a blob (image) of a screenshot of the <canvas>
      */
     screenshot(){
+        // strm = this.canvas.captureStream(60);
+        // MediaStream {id: 'c95b5168-836d-4b23-85fc-dcd1145de217', active: true, onaddtrack: null, onremovetrack: null, onactive: null, …}
+        // ic = new ImageCapture(strm.getTracks()[0])
+        // ImageCapture {track: CanvasCaptureMediaStreamTrack}
+        // ic.grabFrame()
+        // Promise {<pending>}
         return;
     }
 }
