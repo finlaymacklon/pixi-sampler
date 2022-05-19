@@ -1,10 +1,14 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PixiExposer = void 0;
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
-class PixiExposer {
+export class PixiExposer {
+    private isExposing: boolean;
+    private isFreezing: boolean;
+    private cor: Object; 
+    private frozenCopiedCor: Object;
+    private canvas: HTMLCanvasElement;
+    private resolution: number; 
+
     constructor() {
         this.isExposing = false; // set when we start exposing the scene graph
         this.isFreezing = false; // set when we (un-)freeze the renderer
@@ -17,7 +21,7 @@ class PixiExposer {
     /**
      * Inject the game renderer method with our tracking code
      */
-    expose() {
+    public expose() {
         // make sure PIXI actually exists in the global scope
         // @ts-ignore
         if (typeof PIXI === "undefined") {
@@ -54,53 +58,52 @@ class PixiExposer {
             xpsr.canvas = rndr.view;
             // copy the resolution of the renderer
             xpsr.resolution = rndr.resolution;
-        };
+        }
         // mark as injected
         xpsr.isExposing = true;
     }
     /**
      * Poll the scene graph for a frozen copy of the current COR
      */
-    corpoll() {
+    private corpoll(){
         return Object.freeze(Object.assign({}, this.cor));
     }
     /**
      * Freeze the renderer and the cor
      */
-    freeze() {
+    public freeze(){        
         this.isFreezing = true;
         this.frozenCopiedCor = this.corpoll();
     }
     /**
      * Unfreeze the renderer
      */
-    unfreeze() {
+    public unfreeze(){
         this.isFreezing = false;
         this.frozenCopiedCor = {};
     }
     /**
      * Serialize and return the frozen copied COR
      */
-    serialize() {
+    public serialize(){
         return JSON.stringify(this.frozenCopiedCor);
     }
     /**
      * Return a reference to the canvas
      */
-    getCanvas() {
+    public getCanvas(){
         return this.canvas;
     }
     /**
      * Check if the renderer is frozen
      */
-    checkFrozen() {
+    public checkFrozen(){
         return this.isFreezing;
     }
     /**
      * Check if the renderer is exposed
      */
-    checkExposed() {
+    public checkExposed(){
         return this.isExposing;
     }
 }
-exports.PixiExposer = PixiExposer;
