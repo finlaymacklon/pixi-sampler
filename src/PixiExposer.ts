@@ -65,7 +65,7 @@ export class PixiExposer {
     /**
      * Poll the scene graph for a frozen copy of the current COR
      */
-    private corpoll(){
+    private corPoll(){
         return Object.freeze(Object.assign({}, this.cor));
     }
     /**
@@ -73,7 +73,7 @@ export class PixiExposer {
      */
     public freeze(){        
         this.isFreezing = true;
-        this.frozenCopiedCor = this.corpoll();
+        this.frozenCopiedCor = this.corPoll();
     }
     /**
      * Unfreeze the renderer
@@ -86,8 +86,15 @@ export class PixiExposer {
      * Serialize and return the frozen copied COR
      */
     public serialize(){
-        return JSON.stringify(this.frozenCopiedCor);
+        // TODO use optimized serialization
+        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer());
     }
+    //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
+    // maybe we should put the blobs in the local storage and download them later
+    // or maybe we should pass the blobs (or strings) to a web worker which can do the IO seperately
+    // or maybe we should open a websocket with the server and send the blobs
+    // each blob is about 30MB, so we could find a way to compress these and store them in a SQL DB
+    // i think saving them to a directory as individual files will be messy
     /**
      * Return a reference to the canvas
      */
@@ -106,4 +113,21 @@ export class PixiExposer {
     public checkExposed(){
         return this.isExposing;
     }
+    /**
+     * Custom replacer function before serializing the COR
+     * Remove all circular references
+     */
+    private getCircularReplacer(){
+        const seen = new WeakSet();
+        // @ts-ignore
+        return (key, value) => {
+          if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+              return;
+            }
+            seen.add(value);
+          }
+          return value;
+        };
+    };
 }
