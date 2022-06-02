@@ -13,6 +13,9 @@ class PixiExposer {
         // @ts-ignore
         this.canvas = null; // set in the renderer's render function
         this.resolution = 1; // set in the renderer's render function
+        // for the demo
+        this.nodes = [];
+        this.frameCount = 0;
     }
     /**
      * Inject the game renderer method with our tracking code
@@ -54,6 +57,13 @@ class PixiExposer {
             xpsr.canvas = rndr.view;
             // copy the resolution of the renderer
             xpsr.resolution = rndr.resolution;
+            // for the demo
+            xpsr.frameCount += 1;
+            if (xpsr.frameCount === 20) {
+                xpsr.nodes = [];
+                xpsr.findNodes(stage);
+                xpsr.frameCount = 0;
+            }
         };
         // mark as injected
         xpsr.isExposing = true;
@@ -61,7 +71,7 @@ class PixiExposer {
     /**
      * Poll the scene graph for a frozen copy of the current COR
      */
-    corpoll() {
+    corPoll() {
         return Object.freeze(Object.assign({}, this.cor));
     }
     /**
@@ -69,7 +79,7 @@ class PixiExposer {
      */
     freeze() {
         this.isFreezing = true;
-        this.frozenCopiedCor = this.corpoll();
+        this.frozenCopiedCor = this.corPoll();
     }
     /**
      * Unfreeze the renderer
@@ -82,8 +92,17 @@ class PixiExposer {
      * Serialize and return the frozen copied COR
      */
     serialize() {
-        return JSON.stringify(this.frozenCopiedCor);
+        // (Not yet) optimized serialization
+        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer());
+        //             .replace(/\u2028|\u2029/g, (m:string) => {
+        //                 return "\\u202" + (m === "\u2028" ? "8" : "9");
+        //             });
     }
+    //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
+    // maybe we should put the blobs in the local storage and download them later
+    // or maybe we should pass the blobs (or strings) to a web worker which can do the IO seperately
+    // or maybe we should open a websocket with the server and send the blobs
+    // each blob is about 30MB, so we could find a way to compress these
     /**
      * Return a reference to the canvas
      */
@@ -102,5 +121,32 @@ class PixiExposer {
     checkExposed() {
         return this.isExposing;
     }
+    findNodes(n) {
+        if (n === undefined || n === null)
+            return;
+        if (n.name !== undefined && n.name !== null && n.name !== "" && n.name !== "group") {
+            this.nodes.push(n);
+        }
+        if (n.children)
+            n.children.map((c) => this.findNodes(c));
+    }
+    /**
+     * Custom replacer function when serializing the COR
+     * Remove all circular references
+     */
+    getCircularReplacer() {
+        const seen = new WeakSet();
+        // @ts-ignore
+        return (key, value) => {
+            if (typeof value === "object" && value !== null) {
+                if (seen.has(value)) {
+                    return;
+                }
+                seen.add(value);
+            }
+            return value;
+        };
+    }
+    ;
 }
 exports.PixiExposer = PixiExposer;

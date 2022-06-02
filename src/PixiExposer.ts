@@ -1,3 +1,7 @@
+import JSONH from 'jsonh';
+import { ListenOptions } from 'net';
+import { json } from 'stream/consumers';
+
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
@@ -8,6 +12,9 @@ export class PixiExposer {
     private frozenCopiedCor: Object;
     private canvas: HTMLCanvasElement;
     private resolution: number; 
+    // for the demo
+    public nodes: Array<any>;
+    private frameCount: number;
 
     constructor() {
         this.isExposing = false; // set when we start exposing the scene graph
@@ -17,6 +24,9 @@ export class PixiExposer {
         // @ts-ignore
         this.canvas = null; // set in the renderer's render function
         this.resolution = 1; // set in the renderer's render function
+        // for the demo
+        this.nodes = [];
+        this.frameCount = 0;
     }
     /**
      * Inject the game renderer method with our tracking code
@@ -58,6 +68,13 @@ export class PixiExposer {
             xpsr.canvas = rndr.view;
             // copy the resolution of the renderer
             xpsr.resolution = rndr.resolution;
+            // for the demo
+            xpsr.frameCount += 1;
+            if (xpsr.frameCount === 20) {
+                xpsr.nodes = [];
+                xpsr.findNodes(stage);
+                xpsr.frameCount = 0;
+            }
         }
         // mark as injected
         xpsr.isExposing = true;
@@ -86,15 +103,17 @@ export class PixiExposer {
      * Serialize and return the frozen copied COR
      */
     public serialize(){
-        // TODO use optimized serialization
-        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer());
+        // (Not yet) optimized serialization
+        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer())
+        //             .replace(/\u2028|\u2029/g, (m:string) => {
+        //                 return "\\u202" + (m === "\u2028" ? "8" : "9");
+        //             });
     }
     //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
     // maybe we should put the blobs in the local storage and download them later
     // or maybe we should pass the blobs (or strings) to a web worker which can do the IO seperately
     // or maybe we should open a websocket with the server and send the blobs
-    // each blob is about 30MB, so we could find a way to compress these and store them in a SQL DB
-    // i think saving them to a directory as individual files will be messy
+    // each blob is about 30MB, so we could find a way to compress these
     /**
      * Return a reference to the canvas
      */
@@ -113,8 +132,15 @@ export class PixiExposer {
     public checkExposed(){
         return this.isExposing;
     }
+    public findNodes(n: any) {
+        if (n === undefined || n === null) return;
+        if (n.name !== undefined && n.name !== null && n.name !== "" && n.name !== "group") {
+            this.nodes.push(n);
+        }
+        if (n.children) n.children.map((c: any) => this.findNodes(c));
+    }
     /**
-     * Custom replacer function before serializing the COR
+     * Custom replacer function when serializing the COR
      * Remove all circular references
      */
     private getCircularReplacer(){

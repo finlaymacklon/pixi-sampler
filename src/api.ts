@@ -1,4 +1,4 @@
-import fs from "fs-extra-promise";
+import fs from 'fs-extra-promise';
 import { Page } from '@playwright/test'
 import { PixiExposer } from './PixiExposer';
 

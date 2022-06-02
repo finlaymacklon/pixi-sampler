@@ -8,7 +8,8 @@
         "baseUrl": ".",
         "rootDirs": [
             "./src",
-            "node_modules"
+            "node_modules",
+            "./typings-custom/**/*.d.ts"
         ],
         "types": [
             "node"
