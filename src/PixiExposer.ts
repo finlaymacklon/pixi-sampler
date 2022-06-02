@@ -1,6 +1,4 @@
 import JSONH from 'jsonh';
-import { ListenOptions } from 'net';
-import { json } from 'stream/consumers';
 
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
