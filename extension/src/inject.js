@@ -36,37 +36,37 @@ function addTooltip(pixi_exposer){
   canvas.addEventListener("mousemove", (e) => {
     const scaleX = parseFloat(canvas.style.width) / canvas.width;
     const scaleY = parseFloat(canvas.style.height) / canvas.height;
-    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);
+    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);//.reverse().sort();
+    // console.log(nodes);
     const showTooltip = nodes.map(o => {
+      if (!o.visible || !o.renderable || o.worldAlpha <= 0) return;
       // if (!o) return;
       // if (!o.worldPosition) return;
       // if (!o?._texture?.baseTexture?.resource?.url) return;
       // get coordinates by traversing up the tree along parents
-      const pos = getPosition(o);
-      let left = pos.x;
-      let top = pos.y;
-      if (o.anchor) {
-        left = (left - (o.anchor.x * o.width)) * scaleX;
-        top = (top - (o.anchor.y * o.height)) * scaleY;
+      // const pos = getPosition(o);
+      let left = o.vertexData[0];
+      let top = o.vertexData[1];
+      let width = o.vertexData[2] - o.vertexData[0];
+      let height = o.vertexData[7] - o.vertexData[1];
+      if (o._anchor) {
+        left = (left - (o._anchor._x * width)) * scaleX;
+        top = (top - (o._anchor._y * height)) * scaleY;
       } else {
         left = left * scaleX;
         top = top * scaleY;
       }
-      const width = o.width * scaleX;
-      const height = o.height * scaleY;
+      width = width * scaleX;
+      height = height * scaleY;
       const dx = e.offsetX - left;
       const dy = e.offsetY - top;
       const isHit = (dx >= 0) && (dx <= width) && (dy >= 0) && (dy <= height);
-      //const name = o.name;
       if (isHit) { //} && name) {
-        // console.log({ left, top, dx, dy, isHit })
-        tooltip.style.left = `${e.clientX-50}px`;
-        tooltip.style.top = `${e.clientY+20}px`;
-        // tooltip.style.left = left;
-        // tooltip.style.top = top;
-        tooltip.innerText = `name: ${o.name},\nkey: ${o.key || o.fontName}`;
-        // tooltip.style.width = `${width}px`;
-        // tooltip.style.height = `${height}px`;
+        tooltip.style.left = `${e.clientX-parseFloat(tooltip.style.width)-10}px`;
+        tooltip.style.top = `${e.clientY-parseFloat(tooltip.style.height)-10}px`;
+        const name = o.name;
+        const key = o.key || o.fontName;
+        tooltip.innerText = `name: ${name},\nkey: ${key}`;
       }
       return isHit;
     }).reduce((total, val) => total || val, false);
@@ -76,18 +76,6 @@ function addTooltip(pixi_exposer){
       tooltip.hidden = true;
     }
   })
-}
-
-function getPosition(obj) {
-  let x = obj.x;
-  let y = obj.y;
-  const parent = obj.parent;
-  if (parent) {
-    const parentPos = getPosition(parent);
-    x += parentPos.x;
-    y += parentPos.y;
-  }
-  return { x, y };
 }
 
 function findNodesWithAsset(node) {
@@ -101,7 +89,6 @@ function findNodesWithAsset(node) {
 //   if (node.name === name)
 //       return node;
 //   if (node.children)
-//       return node.children.map(c => findNode(c, name))
+//       return node.children.map(c => findNode(c))
 // }
-
-// findNode(__PIXI_EXPOSER__.cor, "boots").flat(Infinity)[0]
+// >>> findNode(__PIXI_EXPOSER__.cor, "boots").flat(Infinity)[0]
