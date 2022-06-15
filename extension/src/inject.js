@@ -34,28 +34,34 @@ function addTooltip(pixi_exposer){
   // canvas.appendChild(tooltip)
 
   canvas.addEventListener("mousemove", (e) => {
-    const showTooltip = pixi_exposer.nodes.map(o => {
-      if (!o) return;
-      if (!o.worldPosition) return;
-      let left = o.worldPosition.x;
-      let top = o.worldPosition.y;
+    const scaleX = parseFloat(canvas.style.width) / canvas.width;
+    const scaleY = parseFloat(canvas.style.height) / canvas.height;
+    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);
+    const showTooltip = nodes.map(o => {
+      // if (!o) return;
+      // if (!o.worldPosition) return;
+      // if (!o?._texture?.baseTexture?.resource?.url) return;
+      // get coordinates by traversing up the tree along parents
+      const pos = getPosition(o);
+      let left = pos.x;
+      let top = pos.y;
       if (o.anchor) {
-        left = (left - (o.anchor.x * o.width))// * devicePixelRatio;
-        top = (top - (o.anchor.y * o.height))// * devicePixelRatio;
+        left = (left - (o.anchor.x * o.width)) * scaleX;
+        top = (top - (o.anchor.y * o.height)) * scaleY;
       } else {
-        left = left //* devicePixelRatio;
-        top = top// * devicePixelRatio;
+        left = left * scaleX;
+        top = top * scaleY;
       }
-      const width = o.width //* devicePixelRatio;
-      const height = o.height //* devicePixelRatio;
+      const width = o.width * scaleX;
+      const height = o.height * scaleY;
       const dx = e.offsetX - left;
       const dy = e.offsetY - top;
       const isHit = (dx >= 0) && (dx <= width) && (dy >= 0) && (dy <= height);
       //const name = o.name;
       if (isHit) { //} && name) {
         // console.log({ left, top, dx, dy, isHit })
-        tooltip.style.left = `${e.clientX+50}px`;
-        tooltip.style.top = `${e.clientY-20}px`;
+        tooltip.style.left = `${e.clientX-50}px`;
+        tooltip.style.top = `${e.clientY+20}px`;
         // tooltip.style.left = left;
         // tooltip.style.top = top;
         tooltip.innerText = `name: ${o.name},\nkey: ${o.key || o.fontName}`;
@@ -71,3 +77,31 @@ function addTooltip(pixi_exposer){
     }
   })
 }
+
+function getPosition(obj) {
+  let x = obj.x;
+  let y = obj.y;
+  const parent = obj.parent;
+  if (parent) {
+    const parentPos = getPosition(parent);
+    x += parentPos.x;
+    y += parentPos.y;
+  }
+  return { x, y };
+}
+
+function findNodesWithAsset(node) {
+  if (node?._texture?.baseTexture?.resource?.url !== undefined)
+    return node;
+  if (node.children)
+    return node.children.map(child => findNodesWithAsset(child));
+}
+
+// function findNode(node, name) {
+//   if (node.name === name)
+//       return node;
+//   if (node.children)
+//       return node.children.map(c => findNode(c, name))
+// }
+
+// findNode(__PIXI_EXPOSER__.cor, "boots").flat(Infinity)[0]

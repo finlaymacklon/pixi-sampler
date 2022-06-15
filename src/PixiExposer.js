@@ -13,8 +13,6 @@ class PixiExposer {
         // @ts-ignore
         this.canvas = null; // set in the renderer's render function
         this.resolution = 1; // set in the renderer's render function
-        // for the demo
-        this.nodes = [];
         this.frameCount = 0;
     }
     /**
@@ -59,11 +57,6 @@ class PixiExposer {
             xpsr.resolution = rndr.resolution;
             // for the demo
             xpsr.frameCount += 1;
-            if (xpsr.frameCount === 20) {
-                xpsr.nodes = [];
-                xpsr.findNodes(stage);
-                xpsr.frameCount = 0;
-            }
         };
         // mark as injected
         xpsr.isExposing = true;
@@ -94,9 +87,6 @@ class PixiExposer {
     serialize() {
         // (Not yet) optimized serialization
         return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer());
-        //             .replace(/\u2028|\u2029/g, (m:string) => {
-        //                 return "\\u202" + (m === "\u2028" ? "8" : "9");
-        //             });
     }
     //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
     // maybe we should put the blobs in the local storage and download them later
@@ -120,15 +110,6 @@ class PixiExposer {
      */
     checkExposed() {
         return this.isExposing;
-    }
-    findNodes(n) {
-        if (n === undefined || n === null)
-            return;
-        if (n.name !== undefined && n.name !== null && n.name !== "" && n.name !== "group") {
-            this.nodes.push(n);
-        }
-        if (n.children)
-            n.children.map((c) => this.findNodes(c));
     }
     /**
      * Custom replacer function when serializing the COR
