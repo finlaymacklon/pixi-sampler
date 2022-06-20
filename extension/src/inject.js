@@ -1,20 +1,16 @@
 import { PixiExposer } from "../../src/PixiExposer";
-
 (() => {
   const __PIXI_EXPOSER__ = new PixiExposer();
   window.__PIXI_EXPOSER__ = __PIXI_EXPOSER__;
   __PIXI_EXPOSER__.expose();
   addTooltip(__PIXI_EXPOSER__);
 })();
-
 // FOR THE DEMO
 function addTooltip(pixi_exposer){
   const canvas = document.querySelector("canvas");
-
   const tooltip = document.createElement('div');
   tooltip.style.position = 'absolute';
   tooltip.style.display = 'block';
-  // tooltip.style.borderBottom = '1px dotted black';
   tooltip.style.width = '140px';
   tooltip.style.height = '60px';
   tooltip.style.background = 'white';
@@ -31,40 +27,29 @@ function addTooltip(pixi_exposer){
   tooltip.hidden = true;
   //canvas.parentElement.style.position = "relative";
   canvas.parentElement.appendChild(tooltip)
-  // canvas.appendChild(tooltip)
 
   canvas.addEventListener("mousemove", (e) => {
     const scaleX = parseFloat(canvas.style.width) / canvas.width;
     const scaleY = parseFloat(canvas.style.height) / canvas.height;
-    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);//.reverse().sort();
+    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);
     // console.log(nodes);
     const showTooltip = nodes.map(o => {
       if (!o.visible || !o.renderable || o.worldAlpha <= 0) return;
-      // if (!o) return;
-      // if (!o.worldPosition) return;
-      // if (!o?._texture?.baseTexture?.resource?.url) return;
-      // get coordinates by traversing up the tree along parents
-      // const pos = getPosition(o);
-      let left = o.vertexData[0];
-      let top = o.vertexData[1];
+      let left = o.vertexData[0];// - o.cameraOffset.x;
+      let top = o.vertexData[1];// - o.cameraOffset.y;
       let width = o.vertexData[2] - o.vertexData[0];
       let height = o.vertexData[7] - o.vertexData[1];
-      if (o._anchor) {
-        left = (left - (o._anchor._x * width)) * scaleX;
-        top = (top - (o._anchor._y * height)) * scaleY;
-      } else {
-        left = left * scaleX;
-        top = top * scaleY;
-      }
+      left = left * scaleX;
+      top = top * scaleY;
       width = width * scaleX;
       height = height * scaleY;
       const dx = e.offsetX - left;
       const dy = e.offsetY - top;
       const isHit = (dx >= 0) && (dx <= width) && (dy >= 0) && (dy <= height);
-      if (isHit) { //} && name) {
+      if (isHit) {
         tooltip.style.left = `${e.clientX-parseFloat(tooltip.style.width)-10}px`;
         tooltip.style.top = `${e.clientY-parseFloat(tooltip.style.height)-10}px`;
-        const name = o.name;
+        const name = o.name || o.parent.name || o.parent.parent.name;
         const key = o.key || o.fontName;
         tooltip.innerText = `name: ${name},\nkey: ${key}`;
       }
@@ -77,14 +62,12 @@ function addTooltip(pixi_exposer){
     }
   })
 }
-
 function findNodesWithAsset(node) {
   if (node?._texture?.baseTexture?.resource?.url !== undefined)
     return node;
   if (node.children)
     return node.children.map(child => findNodesWithAsset(child));
 }
-
 // function findNode(node, name) {
 //   if (node.name === name)
 //       return node;

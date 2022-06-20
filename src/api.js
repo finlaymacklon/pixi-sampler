@@ -16,10 +16,11 @@ exports.PixiExposerAPI = void 0;
 const fs_extra_promise_1 = __importDefault(require("fs-extra-promise"));
 const PixiExposer_1 = require("./PixiExposer");
 class PixiExposerAPI {
-    constructor(page) {
+    constructor(page, path) {
         this.instanceName = '__PIXI_EXPOSER__';
         this.basePath = __dirname;
         this.page = page;
+        this.snapshotsPath = path;
     }
     startExposing() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,6 +41,7 @@ class PixiExposerAPI {
                 `window.${this.instanceName} = ${this.instanceName};`,
                 `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.expose.name}();`
             ].join('\n');
+            console.log(code);
             yield this.page.evaluate(code);
         });
     }
@@ -51,7 +53,7 @@ class PixiExposerAPI {
             yield this.freezeRenderer();
             // take screenshot
             // @ts-ignore
-            yield canvas.screenshot({ path: `${this.basePath}/${name}.png` });
+            yield canvas.screenshot({ path: `${this.snapshotsPath}/${name}.png` });
             // grab reference to scene graph
             const sceneGraphHandle = yield this.getSceneGraphHandle();
             // read the scene graph
@@ -60,7 +62,7 @@ class PixiExposerAPI {
             yield this.unfreezeRenderer();
             // save the scene graph
             // @ts-ignore
-            yield this.saveSceneGraph(sceneGraph, `${this.basePath}/${name}.json`);
+            yield this.saveSceneGraph(sceneGraph, `${this.snapshotsPath}/${name}.json`);
         });
     }
     freezeRenderer() {

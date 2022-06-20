@@ -5,10 +5,12 @@ import { PixiExposer } from './PixiExposer';
 export class PixiExposerAPI {
     private readonly instanceName:string = '__PIXI_EXPOSER__';
     private readonly basePath:string = __dirname;
+    private snapshotsPath:string;
     private page:Page;
 
-    constructor (page:Page) {
+    constructor (page:Page, path:string) {
         this.page = page;
+        this.snapshotsPath = path;
     }
 
     public async startExposing(){
@@ -27,6 +29,7 @@ export class PixiExposerAPI {
             `window.${this.instanceName} = ${this.instanceName};`,
             `${this.instanceName}.${PixiExposer.prototype.expose.name}();`
         ].join('\n');
+        console.log(code);
         await this.page.evaluate(code);
     }
 
@@ -37,7 +40,7 @@ export class PixiExposerAPI {
         await this.freezeRenderer();
         // take screenshot
         // @ts-ignore
-        await canvas.screenshot({ path: `${this.basePath}/${name}.png` });
+        await canvas.screenshot({ path: `${this.snapshotsPath}/${name}.png` });
         // grab reference to scene graph
         const sceneGraphHandle = await this.getSceneGraphHandle();
         // read the scene graph
@@ -46,7 +49,7 @@ export class PixiExposerAPI {
         await this.unfreezeRenderer();
         // save the scene graph
         // @ts-ignore
-        await this.saveSceneGraph(sceneGraph, `${this.basePath}/${name}.json`);
+        await this.saveSceneGraph(sceneGraph, `${this.snapshotsPath}/${name}.json`);
     }
 
     private async freezeRenderer() {

@@ -5,6 +5,7 @@ exports.PixiExposer = void 0;
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
 class PixiExposer {
+    //private resolution: number; 
     constructor() {
         this.isExposing = false; // set when we start exposing the scene graph
         this.isFreezing = false; // set when we (un-)freeze the renderer
@@ -12,8 +13,7 @@ class PixiExposer {
         this.frozenCopiedCor = {}; // set when we poll the scene graph
         // @ts-ignore
         this.canvas = null; // set in the renderer's render function
-        this.resolution = 1; // set in the renderer's render function
-        this.frameCount = 0;
+        //this.resolution = 1; // set in the renderer's render function
     }
     /**
      * Inject the game renderer method with our tracking code
@@ -54,9 +54,7 @@ class PixiExposer {
             // copy reference to the canvas
             xpsr.canvas = rndr.view;
             // copy the resolution of the renderer
-            xpsr.resolution = rndr.resolution;
-            // for the demo
-            xpsr.frameCount += 1;
+            //xpsr.resolution = rndr.resolution;
         };
         // mark as injected
         xpsr.isExposing = true;
@@ -120,9 +118,8 @@ class PixiExposer {
         // @ts-ignore
         return (key, value) => {
             if (typeof value === "object" && value !== null) {
-                if (seen.has(value)) {
+                if (seen.has(value))
                     return;
-                }
                 seen.add(value);
             }
             return value;
