@@ -19,7 +19,8 @@ export class PixiExposerAPI {
     }
 
     private async injectScript() {
-        const scriptPath = `${this.basePath}/${PixiExposer.name}.js`;
+        const scriptPath = `${this.basePath}/${PixiExposer.name}Script.js`; // TODO fix hardcoding of PixiExposerScript.js
+        // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
         await this.page.addScriptTag({ 'path': scriptPath });
     }
     
@@ -29,7 +30,6 @@ export class PixiExposerAPI {
             `window.${this.instanceName} = ${this.instanceName};`,
             `${this.instanceName}.${PixiExposer.prototype.expose.name}();`
         ].join('\n');
-        console.log(code);
         await this.page.evaluate(code);
     }
 
@@ -73,6 +73,6 @@ export class PixiExposerAPI {
     }
 
     private async saveSceneGraph(corString:string, path:string) {
-        await fs.writeFileAsync(corString, path);
+        await fs.writeFileAsync(path, corString);
     }
 }

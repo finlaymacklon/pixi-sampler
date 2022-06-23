@@ -30,7 +30,8 @@ class PixiExposerAPI {
     }
     injectScript() {
         return __awaiter(this, void 0, void 0, function* () {
-            const scriptPath = `${this.basePath}/${PixiExposer_1.PixiExposer.name}.js`;
+            const scriptPath = `${this.basePath}/${PixiExposer_1.PixiExposer.name}Script.js`; // TODO fix hardcoding of PixiExposerScript.js
+            // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
             yield this.page.addScriptTag({ 'path': scriptPath });
         });
     }
@@ -41,7 +42,6 @@ class PixiExposerAPI {
                 `window.${this.instanceName} = ${this.instanceName};`,
                 `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.expose.name}();`
             ].join('\n');
-            console.log(code);
             yield this.page.evaluate(code);
         });
     }
@@ -91,7 +91,7 @@ class PixiExposerAPI {
     }
     saveSceneGraph(corString, path) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield fs_extra_promise_1.default.writeFileAsync(corString, path);
+            yield fs_extra_promise_1.default.writeFileAsync(path, corString);
         });
     }
 }

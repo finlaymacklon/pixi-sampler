@@ -117,6 +117,8 @@ export class PixiExposer {
      * Remove all circular references
      */
     private getCircularReplacer(){
+        // TODO change to BFS instead of DFS
+        // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
         const seen = new WeakSet();
         // @ts-ignore
         return (key, value) => {

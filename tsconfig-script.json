@@ -1,0 +1,19 @@
+// TODO fix hardcoding of PixiExposerScript.js
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "baseUrl": ".",
+        "rootDirs": [
+            "./src",
+            "node_modules",
+            "./typings-custom/**/*.d.ts"
+        ],
+        "types": [
+            "node"
+        ]
+    }    
+}

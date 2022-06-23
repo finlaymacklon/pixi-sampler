@@ -1,9 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PixiExposer = void 0;
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
+// TODO fix hardcoding of PixiExposerScript.js
 class PixiExposer {
     //private resolution: number; 
     constructor() {
@@ -114,8 +112,6 @@ class PixiExposer {
      * Remove all circular references
      */
     getCircularReplacer() {
-        // TODO change to BFS instead of DFS
-        // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
         const seen = new WeakSet();
         // @ts-ignore
         return (key, value) => {
@@ -129,4 +125,3 @@ class PixiExposer {
     }
     ;
 }
-exports.PixiExposer = PixiExposer;
