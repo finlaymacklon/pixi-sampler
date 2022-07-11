@@ -1,6 +1,6 @@
 import fs from 'fs-extra-promise';
 import { Page } from '@playwright/test'
-import { PixiExposer } from './PixiExposer';
+import { PixiExposer } from 'pixi-exposer-script';
 
 export class PixiExposerAPI {
     private readonly instanceName:string = '__PIXI_EXPOSER__';
@@ -19,7 +19,7 @@ export class PixiExposerAPI {
     }
 
     private async injectScript() {
-        const scriptPath = `${this.basePath}/${PixiExposer.name}Script.js`; // TODO fix hardcoding of PixiExposerScript.js
+        const scriptPath = `${this.basePath}/${PixiExposer.name}.js`;
         // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
         await this.page.addScriptTag({ 'path': scriptPath });
     }

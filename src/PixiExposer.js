@@ -1,17 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PixiExposer = void 0;
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
 class PixiExposer {
-    //private resolution: number; 
     constructor() {
         this.isExposing = false; // set when we start exposing the scene graph
         this.isFreezing = false; // set when we (un-)freeze the renderer
         this.cor = {}; // set in the renderer's render function
         this.frozenCopiedCor = {}; // set when we poll the scene graph
-        // @ts-ignore
         this.canvas = null; // set in the renderer's render function
         //this.resolution = 1; // set in the renderer's render function
     }
@@ -20,7 +15,6 @@ class PixiExposer {
      */
     expose() {
         // make sure PIXI actually exists in the global scope
-        // @ts-ignore
         if (typeof PIXI === "undefined") {
             console.error("PIXI not found in global scope");
             return;
@@ -34,12 +28,10 @@ class PixiExposer {
             return;
         }
         // grab the renderer class from PIXI
-        // @ts-ignore
         const Renderer = PIXI.Renderer;
         // grab original rendering function that PIXI uses
         const renderFunction = Renderer.prototype.render;
         // inject the tracking code into the rendering function
-        // @ts-ignore
         Renderer.prototype.render = function (stage, ...args) {
             // prevent rendering when freezing animations
             if (xpsr.isFreezing)
@@ -117,7 +109,6 @@ class PixiExposer {
         // TODO change to BFS instead of DFS
         // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
         const seen = new WeakSet();
-        // @ts-ignore
         return (key, value) => {
             if (typeof value === "object" && value !== null) {
                 if (seen.has(value))
@@ -127,6 +118,4 @@ class PixiExposer {
             return value;
         };
     }
-    ;
 }
-exports.PixiExposer = PixiExposer;

@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PixiExposerAPI = void 0;
 const fs_extra_promise_1 = __importDefault(require("fs-extra-promise"));
-const PixiExposer_1 = require("./PixiExposer");
+const pixi_exposer_1 = require("pixi-exposer");
 class PixiExposerAPI {
     constructor(page, path) {
         this.instanceName = '__PIXI_EXPOSER__';
@@ -30,7 +30,7 @@ class PixiExposerAPI {
     }
     injectScript() {
         return __awaiter(this, void 0, void 0, function* () {
-            const scriptPath = `${this.basePath}/${PixiExposer_1.PixiExposer.name}Script.js`; // TODO fix hardcoding of PixiExposerScript.js
+            const scriptPath = `${this.basePath}/${pixi_exposer_1.PixiExposer.name}.js`;
             // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
             yield this.page.addScriptTag({ 'path': scriptPath });
         });
@@ -38,9 +38,9 @@ class PixiExposerAPI {
     exposePixi() {
         return __awaiter(this, void 0, void 0, function* () {
             const code = [
-                `const ${this.instanceName} = new ${PixiExposer_1.PixiExposer.name}();`,
+                `const ${this.instanceName} = new ${pixi_exposer_1.PixiExposer.name}();`,
                 `window.${this.instanceName} = ${this.instanceName};`,
-                `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.expose.name}();`
+                `${this.instanceName}.${pixi_exposer_1.PixiExposer.prototype.expose.name}();`
             ].join('\n');
             yield this.page.evaluate(code);
         });
@@ -67,25 +67,25 @@ class PixiExposerAPI {
     }
     freezeRenderer() {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.freeze.name}();`;
+            const code = `${this.instanceName}.${pixi_exposer_1.PixiExposer.prototype.freeze.name}();`;
             yield this.page.evaluate(code);
         });
     }
     unfreezeRenderer() {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.unfreeze.name}();`;
+            const code = `${this.instanceName}.${pixi_exposer_1.PixiExposer.prototype.unfreeze.name}();`;
             yield this.page.evaluate(code);
         });
     }
     getCanvasHandle() {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.getCanvas.name}();`;
+            const code = `${this.instanceName}.${pixi_exposer_1.PixiExposer.prototype.getCanvas.name}();`;
             return yield this.page.evaluateHandle(code);
         });
     }
     getSceneGraphHandle() {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = `${this.instanceName}.${PixiExposer_1.PixiExposer.prototype.serialize.name}();`;
+            const code = `${this.instanceName}.${pixi_exposer_1.PixiExposer.prototype.serialize.name}();`;
             return yield this.page.evaluateHandle(code);
         });
     }
