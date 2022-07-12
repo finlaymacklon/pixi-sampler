@@ -1,6 +1,5 @@
 import fs from 'fs-extra-promise';
 import { Page } from '@playwright/test'
-import { PixiExposer } from 'pixi-exposer-script';
 
 export class PixiExposerAPI {
     private readonly instanceName:string = '__PIXI_EXPOSER__';
@@ -19,16 +18,15 @@ export class PixiExposerAPI {
     }
 
     private async injectScript() {
-        const scriptPath = `${this.basePath}/${PixiExposer.name}.js`;
-        // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
+        const scriptPath = `${this.basePath}/PixiExposer.js`;
         await this.page.addScriptTag({ 'path': scriptPath });
     }
     
     private async exposePixi() {
         const code = [
-            `const ${this.instanceName} = new ${PixiExposer.name}();`,
+            `const ${this.instanceName} = new PixiExposer();`,
             `window.${this.instanceName} = ${this.instanceName};`,
-            `${this.instanceName}.${PixiExposer.prototype.expose.name}();`
+            `${this.instanceName}.expose();`
         ].join('\n');
         await this.page.evaluate(code);
     }
@@ -53,22 +51,22 @@ export class PixiExposerAPI {
     }
 
     private async freezeRenderer() {
-        const code = `${this.instanceName}.${PixiExposer.prototype.freeze.name}();`
+        const code = `${this.instanceName}.freeze();`
         await this.page.evaluate(code);
     }
 
     private async unfreezeRenderer() {
-        const code = `${this.instanceName}.${PixiExposer.prototype.unfreeze.name}();`
+        const code = `${this.instanceName}.unfreeze();`
         await this.page.evaluate(code);
     }
 
     private async getCanvasHandle() {
-        const code = `${this.instanceName}.${PixiExposer.prototype.getCanvas.name}();`
+        const code = `${this.instanceName}.getCanvas();`
         return await this.page.evaluateHandle(code);
     }
 
     private async getSceneGraphHandle() {
-        const code = `${this.instanceName}.${PixiExposer.prototype.serialize.name}();`
+        const code = `${this.instanceName}.serialize();`
         return await this.page.evaluateHandle(code);
     }
 
