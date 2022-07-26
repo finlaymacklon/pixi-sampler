@@ -65,7 +65,9 @@ export class PixiExposerAPI {
         return await this.page.evaluateHandle(code);
     }
 
-    private async getSceneGraphHandle() {
+    private async getSceneGraphHandle(filterKeys: Array<string>) {
+        // TODO continue from here
+        // filterKeys.map()
         const code = `${this.instanceName}.serialize();`
         return await this.page.evaluateHandle(code);
     }

@@ -73,10 +73,11 @@ class PixiExposer {
     }
     /**
      * Serialize and return the frozen copied COR
+     * @param filterKeys: array of key strings to filter out when serializing COR
      */
-    serialize() {
+    serialize(filterKeys) {
         // (Not yet) optimized serialization
-        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer());
+        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer(filterKeys));
     }
     //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
     // maybe we should put the blobs in the local storage and download them later
@@ -104,12 +105,15 @@ class PixiExposer {
     /**
      * Custom replacer function when serializing the COR
      * Remove all circular references
+     * Remove any references to the "game" object
      */
-    getCircularReplacer() {
+    getCircularReplacer(filterKeys) {
         // TODO change to BFS instead of DFS
         // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
         const seen = new WeakSet();
         return (key, value) => {
+            if (key in filterKeys)
+                return;
             if (typeof value === "object" && value !== null) {
                 if (seen.has(value))
                     return;
