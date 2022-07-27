@@ -30,7 +30,6 @@ class PixiExposerAPI {
     injectScript() {
         return __awaiter(this, void 0, void 0, function* () {
             const scriptPath = `${this.basePath}/PixiExposer.js`;
-            // await this.page.addScriptTag({ 'path': scriptPath, 'type': 'module' });
             yield this.page.addScriptTag({ 'path': scriptPath });
         });
     }
@@ -44,8 +43,11 @@ class PixiExposerAPI {
             yield this.page.evaluate(code);
         });
     }
-    takeSnapshot(name) {
+    takeSnapshot(name, filterKeys) {
         return __awaiter(this, void 0, void 0, function* () {
+            // set default for optional parameter
+            if (typeof filterKeys === 'undefined')
+                filterKeys = [];
             // grab reference to the canvas
             const canvas = yield this.getCanvasHandle();
             // stop animations
@@ -54,7 +56,7 @@ class PixiExposerAPI {
             // @ts-ignore
             yield canvas.screenshot({ path: `${this.snapshotsPath}/${name}.png` });
             // grab reference to scene graph
-            const sceneGraphHandle = yield this.getSceneGraphHandle();
+            const sceneGraphHandle = yield this.getSceneGraphHandle(filterKeys);
             // read the scene graph
             const sceneGraph = yield sceneGraphHandle.jsonValue();
             // re-start animations
@@ -82,10 +84,26 @@ class PixiExposerAPI {
             return yield this.page.evaluateHandle(code);
         });
     }
-    getSceneGraphHandle() {
+    getSceneGraphHandle(filterKeys) {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = `${this.instanceName}.serialize();`;
+            const filterKeyString = yield this.getFilterKeysString(filterKeys);
+            // serialize the Scene Graph, filter out specified keys while serializing
+            const code = `${this.instanceName}.serialize(${filterKeyString});`;
             return yield this.page.evaluateHandle(code);
+        });
+    }
+    getFilterKeysString(filterKeys) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (filterKeys.length === 0)
+                return "[]";
+            // construct string of filterKeys array for executing in client
+            const initialString = "[";
+            const idxFinal = filterKeys.length - 1;
+            return filterKeys.reduce((prev, curr, idx) => {
+                if (idx === idxFinal)
+                    return prev + `'${curr}']`;
+                return prev + `'${curr}', `;
+            }, initialString);
         });
     }
     saveSceneGraph(corString, path) {

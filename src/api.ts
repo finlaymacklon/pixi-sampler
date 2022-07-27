@@ -1,5 +1,5 @@
 import fs from 'fs-extra-promise';
-import { Page } from '@playwright/test'
+import { Page, JSHandle } from '@playwright/test'
 
 export class PixiExposerAPI {
     private readonly instanceName:string = '__PIXI_EXPOSER__';
@@ -7,12 +7,12 @@ export class PixiExposerAPI {
     private snapshotsPath:string;
     private page:Page;
 
-    constructor (page:Page, path:string) {
+    private constructor (page:Page, path:string) {
         this.page = page;
         this.snapshotsPath = path;
     }
 
-    public async startExposing(){
+    public async startExposing() {
         await this.injectScript();
         await this.exposePixi();
     }
@@ -31,7 +31,10 @@ export class PixiExposerAPI {
         await this.page.evaluate(code);
     }
 
-    public async takeSnapshot(name:string) {
+    public async takeSnapshot(name:string, filterKeys?: Array<string>) {
+        // set default for optional parameter
+        if (typeof filterKeys === 'undefined')
+            filterKeys = [];
         // grab reference to the canvas
         const canvas = await this.getCanvasHandle();
         // stop animations
@@ -40,7 +43,7 @@ export class PixiExposerAPI {
         // @ts-ignore
         await canvas.screenshot({ path: `${this.snapshotsPath}/${name}.png` });
         // grab reference to scene graph
-        const sceneGraphHandle = await this.getSceneGraphHandle();
+        const sceneGraphHandle = await this.getSceneGraphHandle(filterKeys);
         // read the scene graph
         const sceneGraph = await sceneGraphHandle.jsonValue();
         // re-start animations
@@ -60,16 +63,31 @@ export class PixiExposerAPI {
         await this.page.evaluate(code);
     }
 
-    private async getCanvasHandle() {
+    private async getCanvasHandle(): Promise<JSHandle> {
         const code = `${this.instanceName}.getCanvas();`
         return await this.page.evaluateHandle(code);
     }
 
-    private async getSceneGraphHandle(filterKeys: Array<string>) {
-        // TODO continue from here
-        // filterKeys.map()
-        const code = `${this.instanceName}.serialize();`
+    private async getSceneGraphHandle(filterKeys: Array<string>): Promise<JSHandle> {
+        const filterKeyString = await this.getFilterKeysString(filterKeys);
+        // serialize the Scene Graph, filter out specified keys while serializing
+        const code = `${this.instanceName}.serialize(${filterKeyString});`
         return await this.page.evaluateHandle(code);
+    }
+
+    private async getFilterKeysString(filterKeys: Array<string>): Promise<string> {
+        if (filterKeys.length === 0) 
+            return "[]";
+        // construct string of filterKeys array for executing in client
+        const initialString = "[";
+        const idxFinal = filterKeys.length - 1;
+        return filterKeys.reduce(
+            (prev:string, curr:string, idx:number): string => {
+                if (idx === idxFinal)
+                    return prev + `'${curr}']`
+                return prev + `'${curr}', `;
+            }, 
+            initialString);
     }
 
     private async saveSceneGraph(corString:string, path:string) {

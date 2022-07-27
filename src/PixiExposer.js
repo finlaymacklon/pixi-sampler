@@ -112,7 +112,7 @@ class PixiExposer {
         // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
         const seen = new WeakSet();
         return (key, value) => {
-            if (key in filterKeys)
+            if (filterKeys.includes(key))
                 return;
             if (typeof value === "object" && value !== null) {
                 if (seen.has(value))
