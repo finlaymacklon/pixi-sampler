@@ -23,13 +23,14 @@ class PixiExposerAPI {
     }
     startExposing() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.injectScript();
+            yield this.injectScript('../node_modules/flatted/min.js');
+            yield this.injectScript('PixiExposer.js');
             yield this.exposePixi();
         });
     }
-    injectScript() {
+    injectScript(relativePath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const scriptPath = `${this.basePath}/PixiExposer.js`;
+            const scriptPath = `${this.basePath}/${relativePath}`;
             yield this.page.addScriptTag({ 'path': scriptPath });
         });
     }

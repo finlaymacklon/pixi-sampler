@@ -73,17 +73,10 @@ class PixiExposer {
     }
     /**
      * Serialize and return the frozen copied COR
-     * @param filterKeys: array of key strings to filter out when serializing COR
      */
-    serialize(filterKeys) {
-        // (Not yet) optimized serialization
-        return JSON.stringify(this.frozenCopiedCor, this.getCircularReplacer(filterKeys));
+    serialize() {
+        return Flatted.stringify(this.frozenCopiedCor)
     }
-    //blobs.push(new Blob([JSON.stringify(this.frozenCopiedCor, getCircularReplacer())], { type: 'application/json' }))
-    // maybe we should put the blobs in the local storage and download them later
-    // or maybe we should pass the blobs (or strings) to a web worker which can do the IO seperately
-    // or maybe we should open a websocket with the server and send the blobs
-    // each blob is about 30MB, so we could find a way to compress these
     /**
      * Return a reference to the canvas
      */
@@ -101,25 +94,5 @@ class PixiExposer {
      */
     checkExposed() {
         return this.isExposing;
-    }
-    /**
-     * Custom replacer function when serializing the COR
-     * Remove all circular references
-     * Remove any references to the "game" object
-     */
-    getCircularReplacer(filterKeys) {
-        // TODO change to BFS instead of DFS
-        // https://www.geeksforgeeks.org/difference-between-bfs-and-dfs/
-        const seen = new WeakSet();
-        return (key, value) => {
-            if (filterKeys.includes(key))
-                return;
-            if (typeof value === "object" && value !== null) {
-                if (seen.has(value))
-                    return;
-                seen.add(value);
-            }
-            return value;
-        };
     }
 }

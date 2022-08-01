@@ -13,12 +13,13 @@ export class PixiExposerAPI {
     }
 
     public async startExposing() {
-        await this.injectScript();
+        await this.injectScript('../node_modules/flatted/min.js');
+        await this.injectScript('PixiExposer.js');
         await this.exposePixi();
     }
 
-    private async injectScript() {
-        const scriptPath = `${this.basePath}/PixiExposer.js`;
+    private async injectScript(relativePath: string) {
+        const scriptPath = `${this.basePath}/${relativePath}`;
         await this.page.addScriptTag({ 'path': scriptPath });
     }
     

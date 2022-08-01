@@ -21,6 +21,7 @@ function startListener(request, sender, sendResponse){
     // } else if (typeof PIXI === 'undefined') {
     //   status = "PixiNotLoaded";
     } else {
+      injectScript(chrome.runtime.getURL('PixiExposer.js'), 'body')
       injectScript(chrome.runtime.getURL('inject.js'), 'body');
       status = "OK";      
     }

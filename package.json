@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Finlay Macklon",
-  "dependencies": {    
+  "dependencies": {
+    "flatted": "^3.2.6",
     "fs-extra-promise": "^1.0.1"
   },
   "devDependencies": {
