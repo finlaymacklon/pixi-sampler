@@ -32,10 +32,7 @@ export class PixiExposerAPI {
         await this.page.evaluate(code);
     }
 
-    public async takeSnapshot(name:string, filterKeys?: Array<string>) {
-        // set default for optional parameter
-        if (typeof filterKeys === 'undefined')
-            filterKeys = [];
+    public async takeSnapshot(name:string) {
         // grab reference to the canvas
         const canvas = await this.getCanvasHandle();
         // stop animations
@@ -44,7 +41,7 @@ export class PixiExposerAPI {
         // @ts-ignore
         await canvas.screenshot({ path: `${this.snapshotsPath}/${name}.png` });
         // grab reference to scene graph
-        const sceneGraphHandle = await this.getSceneGraphHandle(filterKeys);
+        const sceneGraphHandle = await this.getSceneGraphHandle();
         // read the scene graph
         const sceneGraph = await sceneGraphHandle.jsonValue();
         // re-start animations
@@ -69,26 +66,10 @@ export class PixiExposerAPI {
         return await this.page.evaluateHandle(code);
     }
 
-    private async getSceneGraphHandle(filterKeys: Array<string>): Promise<JSHandle> {
-        const filterKeyString = await this.getFilterKeysString(filterKeys);
-        // serialize the Scene Graph, filter out specified keys while serializing
-        const code = `${this.instanceName}.serialize(${filterKeyString});`
+    private async getSceneGraphHandle(): Promise<JSHandle> {
+        // serialize the Scene Graph
+        const code = `${this.instanceName}.serialize();`
         return await this.page.evaluateHandle(code);
-    }
-
-    private async getFilterKeysString(filterKeys: Array<string>): Promise<string> {
-        if (filterKeys.length === 0) 
-            return "[]";
-        // construct string of filterKeys array for executing in client
-        const initialString = "[";
-        const idxFinal = filterKeys.length - 1;
-        return filterKeys.reduce(
-            (prev:string, curr:string, idx:number): string => {
-                if (idx === idxFinal)
-                    return prev + `'${curr}']`
-                return prev + `'${curr}', `;
-            }, 
-            initialString);
     }
 
     private async saveSceneGraph(corString:string, path:string) {
