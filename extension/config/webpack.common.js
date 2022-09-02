@@ -15,7 +15,7 @@ const common = {
     // the build folder to output bundles and assets in.
     path: PATHS.build,
     // the filename template for entry chunks
-    filename: '[name].js',
+    filename: '[name].js'
   },
   devtool: 'source-map',
   stats: {
@@ -55,6 +55,12 @@ const common = {
           from: '**/*',
           context: 'public',
         },
+        {
+          from: PATHS.PixiExposer,
+        },
+        {
+          from: PATHS.Flatted,
+        }
       ]
     }),
     // Extract CSS into separate files

@@ -35,6 +35,7 @@ function addTooltip(pixi_exposer){
     // console.log(nodes);
     const showTooltip = nodes.map(o => {
       if (!o.visible || !o.renderable || o.worldAlpha <= 0) return;
+      if (!o?._texture?.baseTexture?.resource?.url) return;
       let left = o.vertexData[0];// - o.cameraOffset.x;
       let top = o.vertexData[1];// - o.cameraOffset.y;
       let width = o.vertexData[2] - o.vertexData[0];

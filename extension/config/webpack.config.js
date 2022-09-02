@@ -11,8 +11,10 @@ const config = merge(common, {
     popup: PATHS.src + '/popup.js',
     contentScript: PATHS.src + '/contentScript.js',
     background: PATHS.src + '/background.js',
-    inject: PATHS.src + '/inject.js'
-  },
+    inject: PATHS.src + '/inject.js',
+    // Flatted: PATHS.Flatted,
+    // PixiExposer: PATHS.PixiExposer
+  }
 });
 
 module.exports = config;

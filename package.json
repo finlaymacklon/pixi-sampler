@@ -1,7 +1,7 @@
 {
   "name": "pixi-exposer",
   "version": "0.2.0",
-  "description": "Expose PixiJS scene graph to enable test automation of the canvas",
+  "description": "Enables sampling of the <canvas> objects representation (COR), a.k.a. scene graph, of a PixiJS application while taking a screenshot.",
   "main": "api.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
