@@ -13,7 +13,7 @@ const config = merge(common, {
     background: PATHS.src + '/background.js',
     inject: PATHS.src + '/inject.js',
     // Flatted: PATHS.Flatted,
-    // PixiExposer: PATHS.PixiExposer
+    // PixiSampler: PATHS.PixiSampler
   }
 });
 

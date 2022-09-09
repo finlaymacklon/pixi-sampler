@@ -22,7 +22,7 @@ function startListener(request, sender, sendResponse){
     //   status = "PixiNotLoaded";
     } else {
       injectScript(chrome.runtime.getURL('Flatted.js'), 'body');
-      injectScript(chrome.runtime.getURL('PixiExposer.js'), 'body');
+      injectScript(chrome.runtime.getURL('PixiSampler.js'), 'body');
       injectScript(chrome.runtime.getURL('inject.js'), 'body');
       status = "OK";      
     }
@@ -31,6 +31,6 @@ function startListener(request, sender, sendResponse){
 };
 
 (() => {
-  // listen to messages from popup to inject the PixiExposer content script
+  // listen to messages from popup to inject the PixiSampler content script
   chrome.runtime.onMessage.addListener(startListener);
 })();

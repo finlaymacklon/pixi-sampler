@@ -1,8 +1,8 @@
 import fs from 'fs-extra-promise';
 import { Page, JSHandle } from '@playwright/test'
 
-export class PixiExposerAPI {
-    private readonly instanceName:string = '__PIXI_EXPOSER__';
+export class PixiSamplerAPI {
+    private readonly instanceName:string = '__PIXI_SAMPLER__';
     private readonly basePath:string = __dirname;
     private snapshotsPath:string;
     private page:Page;
@@ -14,7 +14,7 @@ export class PixiExposerAPI {
 
     public async startExposing() {
         await this.injectScript('../node_modules/flatted/min.js');
-        await this.injectScript('PixiExposer.js');
+        await this.injectScript('PixiSampler.js');
         await this.exposePixi();
     }
 
@@ -25,7 +25,7 @@ export class PixiExposerAPI {
     
     private async exposePixi() {
         const code = [
-            `const ${this.instanceName} = new PixiExposer();`,
+            `const ${this.instanceName} = new PixiSampler();`,
             `window.${this.instanceName} = ${this.instanceName};`,
             `${this.instanceName}.expose();`
         ].join('\n');

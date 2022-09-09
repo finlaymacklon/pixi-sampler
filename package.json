@@ -1,10 +1,11 @@
 {
-  "name": "pixi-exposer",
+  "name": "pixi-sampler",
   "version": "0.2.0",
   "description": "Enables sampling of the <canvas> objects representation (COR), a.k.a. scene graph, of a PixiJS application while taking a screenshot.",
   "main": "api.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc & cd extension && npm run build"
   },
   "author": "Finlay Macklon",
   "dependencies": {
@@ -14,6 +15,7 @@
   "devDependencies": {
     "@playwright/test": "^1.22.1",
     "@types/fs-extra-promise": "^1.0.10",
-    "@types/node": "^17.0.34"
+    "@types/node": "^17.0.34",
+    "typescript": "^4.8.3"
   }
 }

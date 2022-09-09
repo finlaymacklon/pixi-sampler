@@ -1,7 +1,7 @@
 /**
  * Class for exposing the <canvas> objects representation (COR) of PixiJS-based applications
  */
-class PixiExposer {
+class PixiSampler {
     constructor() {
         this.isExposing = false; // set when we start exposing the scene graph
         this.isFreezing = false; // set when we (un-)freeze the renderer
@@ -19,12 +19,12 @@ class PixiExposer {
             console.error("PIXI not found in global scope");
             return;
         }
-        // use a distinct reference to PixiExposer object 
+        // use a distinct reference to PixiSampler object 
         // (to reduce confusion with PIXI.Renderer's this)
-        const xpsr = this;
+        const sampler = this;
         // make sure we haven't already injected the code
-        if (xpsr.isExposing === true) {
-            console.warn("PixiExposer already injected");
+        if (sampler.isExposing === true) {
+            console.warn("PixiSampler already injected");
             return;
         }
         // grab the renderer class from PIXI
@@ -34,22 +34,22 @@ class PixiExposer {
         // inject the tracking code into the rendering function
         Renderer.prototype.render = function (stage, ...args) {
             // prevent rendering when freezing animations
-            if (xpsr.isFreezing)
+            if (sampler.isFreezing)
                 return;
             // use a distinct refernce to the Renderer object
-            // (to reduce confusion with PixiExposer's this)
-            const rndr = this;
+            // (to reduce confusion with PixiSampler's this)
+            const renderer = this;
             // apply the original rendering function
-            renderFunction.apply(rndr, [stage, ...args]);
+            renderFunction.apply(renderer, [stage, ...args]);
             // copy reference to the COR
-            xpsr.cor = stage;
+            sampler.cor = stage;
             // copy reference to the canvas
-            xpsr.canvas = rndr.view;
+            sampler.canvas = renderer.view;
             // copy the resolution of the renderer
-            //xpsr.resolution = rndr.resolution;
+            //sampler.resolution = renderer.resolution;
         };
         // mark as injected
-        xpsr.isExposing = true;
+        sampler.isExposing = true;
     }
     /**
      * Poll the scene graph for a frozen copy of the current COR

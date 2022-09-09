@@ -1,12 +1,12 @@
-// import { PixiExposer } from "../../src/PixiExposer";
+// import { PixiSampler } from "../../src/PixiSampler";
 (() => {
-  const __PIXI_EXPOSER__ = new PixiExposer();
-  window.__PIXI_EXPOSER__ = __PIXI_EXPOSER__;
-  __PIXI_EXPOSER__.expose();
-  addTooltip(__PIXI_EXPOSER__);
+  const __PIXI_SAMPLER__ = new PixiSampler();
+  window.__PIXI_SAMPLER__ = __PIXI_SAMPLER__;
+  __PIXI_SAMPLER__.expose();
+  addTooltip(__PIXI_SAMPLER__);
 })();
 // FOR THE DEMO
-function addTooltip(pixi_exposer){
+function addTooltip(pixi_sampler){
   const canvas = document.querySelector("canvas");
   const tooltip = document.createElement('div');
   tooltip.style.position = 'absolute';
@@ -31,7 +31,7 @@ function addTooltip(pixi_exposer){
   canvas.addEventListener("mousemove", (e) => {
     const scaleX = parseFloat(canvas.style.width) / canvas.width;
     const scaleY = parseFloat(canvas.style.height) / canvas.height;
-    const nodes = findNodesWithAsset(pixi_exposer.cor).flat(Infinity);
+    const nodes = findNodesWithAsset(pixi_sampler.cor).flat(Infinity);
     // console.log(nodes);
     const showTooltip = nodes.map(o => {
       if (!o.visible || !o.renderable || o.worldAlpha <= 0) return;
@@ -75,4 +75,3 @@ function findNodesWithAsset(node) {
 //   if (node.children)
 //       return node.children.map(c => findNode(c))
 // }
-// >>> findNode(__PIXI_EXPOSER__.cor, "boots").flat(Infinity)[0]
