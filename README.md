@@ -8,9 +8,8 @@
 ## Installation
 Currently, this module is not available in `npm`, so installation must be done as follows:
 
-Clone this repository: `git clone https://github.com/finlaymacklon/pixi-sampler`
-
-Run the command `npm i -D` from the `pixi-sampler` directory
+1) Clone this repository: `git clone https://github.com/finlaymacklon/pixi-sampler`
+2) Run the command `npm i -D` from the `pixi-sampler` directory
 
 ## Usage
 
