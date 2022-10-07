@@ -10,6 +10,8 @@ Currently, this module is not available in `npm`, so installation must be done a
 
 Clone this repository: `git clone https://github.com/finlaymacklon/pixi-sampler`
 
+Run the command `npm i -D` from the `pixi-sampler` directory
+
 ## Usage
 
 Load and use the Pixi Sampler API into your test code as follows:
